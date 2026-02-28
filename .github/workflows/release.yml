@@ -1,0 +1,28 @@
+name: Permanent Release
+
+on:
+  workflow_dispatch: # This lets you click "Run workflow" manually
+
+permissions:
+  contents: write    # Grants permission to create the release
+
+jobs:
+  release_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create Zip Archive
+        # This command zips your index.html and any other files into site-backup.zip
+        run: zip -r site-backup.zip . 
+
+      - name: Create Release and Upload
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # The 'date' part makes the version unique so you can run it multiple times
+          VERSION="v$(date +'%Y%m%d%H%M%S')"
+          gh release create $VERSION ./site-backup.zip \
+            --title "Backup $VERSION" \
+            --notes "Permanent backup of index.html and project files."
